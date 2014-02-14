@@ -21,7 +21,7 @@ class IISRewrite(object):
 
     def create_rule(self, name, attr):
         new_rule = etree.SubElement(self.new_rules, "rule",
-                                    attrib={"name": name,
+                                    attrib={"name": attr["url"],
                                             "stopProcessing": "true"})
         etree.SubElement(new_rule, "match",
                          attrib={"url": attr["url"][0] + attr["url"][2:]
