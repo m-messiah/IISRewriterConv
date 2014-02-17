@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 __author__ = 'm_messiah'
 
 try:
@@ -26,7 +26,7 @@ class IISRewrite(object):
         etree.SubElement(new_rule, "match",
                          attrib={"url": attr["url"][0] + attr["url"][2:]
                                  if attr["url"][1] == "/" else attr["url"]})
-        attributes = {"type": name,
+        attributes = {"type": name.capitalize(),
                       "url": sub(r"\$(\d)", "{R:\g<1>}", attr["to"])}
         if name == "redirect":
             attributes["redirectType"] = "Found"
