@@ -6,7 +6,7 @@ try:
 except ImportError:
     import xml.etree.ElementTree as etree
 import sys
-from re import sub
+from re import sub,search
 
 
 class IISRewrite(object):
@@ -23,13 +23,23 @@ class IISRewrite(object):
         new_rule = etree.SubElement(self.new_rules, "rule",
                                     attrib={"name": attr["url"],
                                             "stopProcessing": "true"})
+        param = search(r"\\\?(.*)$", attr["url"])
+        if param:
+            param = param.group(1)
+            url = attr["url"][:attr["url"].rfind("?") - 1]
         etree.SubElement(new_rule, "match",
                          attrib={"url": attr["url"][0] + attr["url"][2:]
                                  if attr["url"][1] == "/" else attr["url"]})
+        if param:
+            cond = etree.SubElement(new_rule, "conditions")
+            etree.SubElement(cond, "add", attrib={"input": "{QUERY_STRING}",
+                                                  "pattern": param}
         attributes = {"type": name.capitalize(),
                       "url": sub(r"\$(\d)", "{R:\g<1>}", attr["to"])}
         if name == "redirect":
             attributes["redirectType"] = "Found"
+        if param:
+            attributes["appendQueryString"] = "false"
         etree.SubElement(new_rule, "action", attrib=attributes)
 
     def convert(self):
