@@ -5,19 +5,19 @@ try:
     from lxml import etree
 except ImportError:
     import xml.etree.ElementTree as etree
-import sys
+from sys import stdin,argv
 from re import sub,search
 
 
 class IISRewrite(object):
-    def __init__(self, source="rewriter.xml", output="new_rewriter.xml"):
-        tree = etree.parse(source)
+    def __init__(self):
+        tree = etree.parse(stdin)
         root = tree.getroot()
         self.rules = [(c.tag, c.attrib, c) for c in root]
         self.new_rules = etree.Element("rules")
         self.fails = []
         self.convert()
-        self.write(output)
+        self.write()
 
     def create_rule(self, name, attr):
         new_rule = etree.SubElement(self.new_rules, "rule",
@@ -51,22 +51,16 @@ class IISRewrite(object):
                     repr(etree.Comment(etree.tounicode(rule).strip()))
                 )
 
-    def write(self, output):
-        with open(output, "w", encoding='utf-8') as out:
-            out.write(etree.tounicode(self.new_rules, pretty_print=True))
-            out.write("<!-- Failed convert. Please, handle it manually-->\n")
-            out.write("\n".join(self.fails))
+    def write(self):
+        print(etree.tounicode(self.new_rules, pretty_print=True))
+        print("<!-- Failed convert. Please, handle it manually-->\n")
+        print("\n".join(self.fails))
 
 
 if __name__ == "__main__":
-    if len(sys.argv) < 3:
-        print("Using: python3 ./IISRewriterConv.py "
-              "<source_file> <output_file>"
-              "-------------------------------------\n"
-              "Converter from IIS URLRewriter2 config xml to "
+    if len(argv) > 1:
+        print("Converter from IIS URLRewriter2 config xml to "
               "standard IIS >7 Rewriter.\n"
-              "Now handle only <rewrite /> and <redirect /> rules.\n"
               "Conditions and other rules must be handled manually.")
         exit(1)
-    IISRewriter = IISRewrite(sys.argv[1], sys.argv[2])
-    print("Successfully converted to {}".format(sys.argv[2]))
+    IISRewriter = IISRewrite()
