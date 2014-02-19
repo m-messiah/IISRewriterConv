@@ -33,7 +33,7 @@ class IISRewrite(object):
         if param:
             cond = etree.SubElement(new_rule, "conditions")
             etree.SubElement(cond, "add", attrib={"input": "{QUERY_STRING}",
-                                                  "pattern": param}
+                                                  "pattern": param})
         attributes = {"type": name.capitalize(),
                       "url": sub(r"\$(\d)", "{R:\g<1>}", attr["to"])}
         if name == "redirect":
@@ -53,11 +53,9 @@ class IISRewrite(object):
 
     def write(self, output):
         with open(output, "w", encoding='utf-8') as out:
-            out.write("<rewrite>\n")
             out.write(etree.tounicode(self.new_rules, pretty_print=True))
             out.write("<!-- Failed convert. Please, handle it manually-->\n")
             out.write("\n".join(self.fails))
-            out.write("</rewrite>")
 
 
 if __name__ == "__main__":
