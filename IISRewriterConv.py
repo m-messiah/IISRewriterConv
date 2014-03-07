@@ -5,8 +5,8 @@ try:
     from lxml import etree
 except ImportError:
     import xml.etree.ElementTree as etree
-from sys import stdin,argv
-from re import sub,search
+from sys import stdin, argv
+from re import sub, search
 
 
 class IISRewrite(object):
@@ -27,17 +27,20 @@ class IISRewrite(object):
         if param:
             param = param.group(1)
             url = attr["url"][:attr["url"].rfind("?") - 1]
+        else:
+            url = attr["url"]
         etree.SubElement(new_rule, "match",
                          attrib={"url": attr["url"][0] + attr["url"][2:]
                                  if attr["url"][1] == "/" else attr["url"]})
         if param:
-            cond = etree.SubElement(new_rule, "conditions")
-            etree.SubElement(cond, "add", attrib={"input": "{QUERY_STRING}",
-                                                  "pattern": param})
+            condition = etree.SubElement(new_rule, "conditions")
+            etree.SubElement(condition, "add",
+                             attrib={"input": "{QUERY_STRING}",
+                                     "pattern": param})
         attributes = {"type": name.capitalize(),
-                      "url": sub(r"\$(\d)", "{R:\g<1>}", attr["to"])}
-        if name == "redirect":
-            attributes["redirectType"] = "Found"
+                      "url": sub(r"\$(\d)",
+                                 "{C:\g<1>}" if param else "{R:\g<1>}",
+                                 attr["to"])}
         if param:
             attributes["appendQueryString"] = "false"
         etree.SubElement(new_rule, "action", attrib=attributes)
